@@ -8,9 +8,11 @@ var { Todo } = require('./models/todo');
 var { User } = require('./models/user');
 
 var app = express();
+const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
+// create a new document in MongoDB
 app.post('/todos', (req, res) => {
     console.log(req.body);
     var todo = new Todo({
@@ -24,6 +26,7 @@ app.post('/todos', (req, res) => {
     });
 });
 
+// get all todos from mongoDB
 app.get('/todos', (req, res) => {
     Todo.find().then((todos) => {
         res.send({ todos });
@@ -53,8 +56,8 @@ app.get('/todos/:id', (req, res) => {
     });
 })
 
-app.listen(3000, () => {
-    console.log('Started server on port 3000');
+app.listen(port, () => {
+    console.log(`Started server on port ${port}`);
 });
 
 module.exports = { app };
