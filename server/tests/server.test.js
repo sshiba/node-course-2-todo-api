@@ -113,5 +113,60 @@ describe('GET /todos/:id', () => {
             //     expect(res.body.todo).toBe(undefined);
             // })
             .end(done);
-    })
+    });
+});
+
+// Testing cases for DELETE /todos/:id
+describe('DELETE /todos/:id', () => {
+    it('should remove a todo', (done) => {
+        var hexID = todos[1]._id.toHexString();
+
+        request(app)
+            .delete(`/todos/${hexID}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo._id).toBe(hexID);
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                };
+
+                Todo.findById(hexID).then((todo) => {
+                    console.log(`Searching for removed todo document: todo = ${todo}`);
+                    expect(todo).toEqual(null);
+                    done();
+                }).catch((err) => done(err));
+            });
+    });
+
+    // Testing GET /posts/<id> with valid ID but no document associated with ID
+    it('should return 404 if todo not found', (done) => {
+        var id = new ObjectID().toHexString();
+        request(app)
+            .delete(`/todos/${id}`)
+            .expect(404)
+            // .expect((res) => {
+            //     expect(res.body.todo).toBe(undefined);
+            // })
+            .end(done);
+    });
+
+    // Testing GET /posts/<id> with invalid ID
+    it('should return 404 for non-object ids', (done) => {
+            request(app)
+                .delete('/todos/123')
+                .expect(404)
+                // .expect((res) => {
+                //     expect(res.body.todo).toBe(undefined);
+                // })
+                .end(done);
+        })
+        // it('should remove a todo', (done) => {
+
+    // });
+
+    // it('should return 404 if object id is invalid', (done) => {
+
+    // });
 });
