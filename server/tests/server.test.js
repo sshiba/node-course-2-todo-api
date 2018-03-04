@@ -10,7 +10,9 @@ const todos = [{
     text: 'First thing to do'
 }, {
     _id: new ObjectID(),
-    text: 'Second thing to do'
+    text: 'Second thing to do',
+    completed: true,
+    completeAt: 3333
 }];
 
 // Clean up the Todo collection then create two documents for testing purposes
@@ -154,19 +156,72 @@ describe('DELETE /todos/:id', () => {
 
     // Testing GET /posts/<id> with invalid ID
     it('should return 404 for non-object ids', (done) => {
-            request(app)
-                .delete('/todos/123')
-                .expect(404)
-                // .expect((res) => {
-                //     expect(res.body.todo).toBe(undefined);
-                // })
-                .end(done);
-        })
-        // it('should remove a todo', (done) => {
+        request(app)
+            .delete('/todos/123')
+            .expect(404)
+            // .expect((res) => {
+            //     expect(res.body.todo).toBe(undefined);
+            // })
+            .end(done);
+    });
+});
 
-    // });
+// Testing cases for PATCH /todos/:id
+describe('PATCH /todos/:id', () => {
+    it('should update a todo', (done) => {
+        var hexID = todos[0]._id.toHexString();
+        var text = 'This task has been completed'
 
-    // it('should return 404 if object id is invalid', (done) => {
+        request(app)
+            .patch(`/todos/${hexID}`)
+            .send({
+                completed: true,
+                text
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBe(true);
+                expect(typeof res.body.todo.completeAt).toBe('number');
+            })
+            .end(done);
+    });
 
-    // });
+    it('should update a todo', (done) => {
+        var hexID = todos[1]._id.toHexString();
+        var text = 'This task has been completed !!'
+
+        request(app)
+            .patch(`/todos/${hexID}`)
+            .send({
+                completed: false,
+                text
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(text);
+                expect(res.body.todo.completed).toBe(false);
+                expect(res.body.todo.completeAt).toBe(null);
+            })
+            .end(done);
+    });
+
+    // Testing GET /posts/<id> with valid ID but no document associated with ID
+    it('should return 404 if todo not found', (done) => {
+        var id = new ObjectID().toHexString();
+        request(app)
+            .patch(`/todos/${id}`)
+            .send({})
+            .expect(404)
+            .end(done);
+    });
+
+    // // Testing GET /posts/<id> with invalid ID
+    it('should return 404 for non-object ids', (done) => {
+        request(app)
+            .patch('/todos/123')
+            .send({})
+            .expect(404)
+            .end(done);
+    });
 });
