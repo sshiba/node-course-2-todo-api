@@ -107,6 +107,22 @@ app.patch('/todos/:id', (req, res) => {
     });
 });
 
+// create a new user in MongoDB
+app.post('/users', (req, res) => {
+    var body = _.pick(req.body, ['email', 'password']);
+    var user = new User(body);
+    console.log('POST /users ', body);
+
+    user.save().then(() => {
+        return user.generatAuthToken();
+    }).then((token) => {
+        console.log('POST /users: ', user);
+        res.header('x-auth', token).send(user);
+    }).catch((err) => {
+        res.status(400).send(err);
+    });
+});
+
 app.listen(port, () => {
     console.log(`Started server on port ${port}`);
 });
