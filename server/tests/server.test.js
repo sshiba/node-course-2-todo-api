@@ -288,3 +288,55 @@ describe('POST /users', () => {
             .end(done);
     });
 });
+
+// Testing POST /users/login API
+describe('POST /users/login', () => {
+    it('should return user and new token', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: users[1].password
+            })
+            .expect(200)
+            .expect((res) => {
+                expect(typeof res.headers['x-auth']).toBe('string');
+                expect(typeof res.body._id).toBe('string');
+                expect(res.body.email).toBe(users[1].email);
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                User.findById(users[1]._id).then((user) => {
+                    expect(user.tokens[0]).toMatchObject({
+                        access: 'auth',
+                        token: res.header['x-auth']
+                    });
+                    done();
+                }).catch((err) => done(err));
+            });
+    });
+
+    it('should return 400 when user does not exist or wrong password', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: users[1].password + 1
+            })
+            .expect(400)
+            .expect((res) => {
+                expect(res.headers['x-auth']).toBeUndefined();
+            })
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                User.findById(users[1]._id).then((user) => {
+                    expect(user.tokens.length).toBe(0);
+                    done();
+                }).catch((err) => done(err));
+            });
+    });
+});
